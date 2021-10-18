@@ -261,20 +261,36 @@ int score(void)
 
 //only top 3 high scores are maintained
 void updateHighscores(int score){
-    FILE* file;
+   FILE* file;
     int highscores[NUM_HIGHSCORES];
     int newHighscore = 0;
+    int size;
     //open highscores.txt to read the highscores
     file = fopen("highscores.txt", "r");
     if(file == NULL){
         printf("Error: could not open file: highscores.txt\n");
         return;
     }
-    //add current highscores into array
-    for(int i = 0; i < NUM_HIGHSCORES; i++){
-        fscanf(file, "%d", &highscores[i]);
+    //first, check if the file has highscores in it or not
+    fseek(file, 0, SEEK_END);
+    size = ftell(file);
+    //if there are element in the file add the highscores to the array
+    if(size != 0){
+        //go back to start of file
+        fseek(file, 0, SEEK_SET);
+        //add current highscores into array
+        for(int i = 0; i < NUM_HIGHSCORES; i++){
+            fscanf(file, "%d", &highscores[i]);
+        }
+    }
+    //otherwise set all highscores to zero
+    else{
+        for(int i = 0; i < NUM_HIGHSCORES; i++){
+            highscores[i] = 0;
+        }
     }
     fclose(file);
+
     //add the score to the correct place in the array of highscores
     for(int i = 0; i < NUM_HIGHSCORES; i++){
         if(score > highscores[i]){
@@ -290,12 +306,8 @@ void updateHighscores(int score){
     } 
     //if there is a new highscore to add, open the file again to write to it and update the highscores
     if(newHighscore){
-        //open the file to write the new highscores
+        //move file pointer back to start of file
         file = fopen("highscores.txt", "w");
-        if(file == NULL){
-            printf("Error: could not open file: highscores.txt\n");
-            return;
-        }
         for(int i = 0; i < NUM_HIGHSCORES; i++){
             fprintf(file, "%d\n", highscores[i]);
         }
