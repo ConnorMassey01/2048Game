@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#define NUM_HIGHSCORES 3
+
 //set to 1 for testing, displays additional data not related to the game
 int verbose = 0;
 
@@ -215,7 +217,7 @@ int move_blocks(char input)
     break;
     
     default:
-        printf("Invaled input givin\n");
+        printf("Invalid input givin\n");
         return 0;
     break;
     }
@@ -245,7 +247,7 @@ void game(void)
     }
 }
 
-void score(void)
+int score(void)
 {
     int sum = 0;
     //sum up all the blocks on the board
@@ -254,7 +256,64 @@ void score(void)
             sum += block[row][col];
         }
     }
-    printf("Socre: %d", sum);
+    return sum;
+}
+
+//only top 3 high scores are maintained
+void updateHighscores(int score){
+    FILE* file;
+    int highscores[NUM_HIGHSCORES];
+    int newHighscore = 0;
+    //open highscores.txt to read the highscores
+    file = fopen("highscores.txt", "r");
+    if(file == NULL){
+        printf("Error: could not open file: highscores.txt\n");
+        return;
+    }
+    //see if the new score is any better than the current highscores
+    for(int i = 0; i < NUM_HIGHSCORES; i++){
+        fscanf(file, "%d", &highscores[i]);
+        if(score > highscores[i]){
+            //shift other highscores down
+            for(int j = i + 1; j < NUM_HIGHSCORES; j++){
+                highscores[j] = highscores[j - 1];
+                
+            }
+            //replace the highscore
+            highscores[i] = score;
+            newHighscore = 1;
+            break;
+        }
+    }
+    fclose(file);
+    //if there is a new highscore to add, open the file again to write to it and update the highscores
+    if(newHighscore){
+        //open the file to write the new highscores
+        file = fopen("highscores.txt", "w");
+        if(file == NULL){
+            printf("Error: could not open file: highscores.txt\n");
+            return;
+        }
+        for(int i = 0; i < NUM_HIGHSCORES; i++){
+            fprintf(file, "%d\n", highscores[i]);
+        }
+    }
+    fclose(file);
+    return;
+}
+
+void displayHighscores(){
+    int score;
+    FILE* file = fopen("highscores.txt", "r");
+    if(file == NULL){
+        printf("Error: could not open file: highscores.txt\n");
+        return;
+    }
+    printf("-----Highscores-----\n");
+    for(int i = 0; i < NUM_HIGHSCORES; i++){
+        fscanf(file, "%d", &score);
+        printf("%d. %d\n", i + 1, score);
+    }
 }
 
 int main(void)
@@ -266,5 +325,9 @@ int main(void)
     game();
     printf("Game over\n");
     //calculate and display score
-    score();
+    printf("Score: %d\n", score());
+    //update file storing the highscores
+    updateHighscores(score());
+    //display the highscores
+    displayHighscores();
 }
