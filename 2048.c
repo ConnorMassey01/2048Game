@@ -270,22 +270,24 @@ void updateHighscores(int score){
         printf("Error: could not open file: highscores.txt\n");
         return;
     }
-    //see if the new score is any better than the current highscores
+    //add current highscores into array
     for(int i = 0; i < NUM_HIGHSCORES; i++){
         fscanf(file, "%d", &highscores[i]);
+    }
+    fclose(file);
+    //add the score to the correct place in the array of highscores
+    for(int i = 0; i < NUM_HIGHSCORES; i++){
         if(score > highscores[i]){
             //shift other highscores down
-            for(int j = i + 1; j < NUM_HIGHSCORES; j++){
+            for(int j = NUM_HIGHSCORES - 1; j > i; j--){
                 highscores[j] = highscores[j - 1];
-                
             }
             //replace the highscore
             highscores[i] = score;
             newHighscore = 1;
             break;
         }
-    }
-    fclose(file);
+    } 
     //if there is a new highscore to add, open the file again to write to it and update the highscores
     if(newHighscore){
         //open the file to write the new highscores
