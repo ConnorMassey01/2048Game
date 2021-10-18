@@ -4,21 +4,28 @@
 #include <stdlib.h>
 #include <time.h>
 
+//number of high scores to keep in file
 #define NUM_HIGHSCORES 3
+//total number of blocks on the board
+#define NUM_BLOCKS 16
+//row and column max must never be set greater than 9
+//additionally, ROW_MAX * COL_MAX must equal NUM_BLOCKS
+#define ROW_MAX 4
+#define COL_MAX 4
 
 //set to 1 for testing, displays additional data not related to the game
 int verbose = 0;
 
 //global variables
-int available = 16;
-int open_slots[16]; //displayed as {(rowcol),(rowcol),...}
-int block[4][4];
+int available = NUM_BLOCKS;
+int open_slots[NUM_BLOCKS]; //displayed as {(rowcol),(rowcol),...}
+int block[ROW_MAX][COL_MAX];
 
 void print_available(void)
 {
     printf("\n\n-----AVAILABLE SPOTS (%d)-----\n", available);
     for(int i = 0; i < available; i++){
-        if(open_slots[i] < 4){
+        if(open_slots[i] < COL_MAX){
             printf("%d", 0);
         }
         printf("%d ", open_slots[i]);
@@ -26,7 +33,7 @@ void print_available(void)
     printf("\n");
     printf("-----USED SPOTS (%d)-----\n", 16 - available);
     for(int i = available; i < 16; i++){
-        if(open_slots[i] < 4){
+        if(open_slots[i] < COL_MAX){
             printf("%d", 0);
         }
         printf("%d ", open_slots[i]);
@@ -36,8 +43,8 @@ void print_available(void)
 
 void print_game(void)
 {
-    for(int row = 0; row < 4; row++){
-        for(int col = 0; col < 4; col++){
+    for(int row = 0; row < ROW_MAX; row++){
+        for(int col = 0; col < COL_MAX; col++){
             printf("%5d", block[row][col]);
         }
         printf("\n");
@@ -71,10 +78,10 @@ void add_block(void)
 
 void set_up_game(void)
 {
-    //initilize all positions on board to zero and add each position to the open_slots array
+    //initialize all positions on board to zero and add each position to the open_slots array
     int count = 0; 
-    for(int row = 0; row < 4; row++){
-        for(int col = 0; col < 4; col++){
+    for(int row = 0; row < ROW_MAX; row++){
+        for(int col = 0; col < COL_MAX; col++){
             block[row][col] = 0;
             open_slots[count++] = col + row*10;
         }
@@ -85,8 +92,8 @@ void update_slots(void)
 {
     //check each position for zeros, if they are zero add to start of array, otherwise add to end of array
     int open = 0, used = available;
-    for(int row = 0; row < 4; row++){
-        for(int col = 0; col < 4; col++){
+    for(int row = 0; row < ROW_MAX; row++){
+        for(int col = 0; col < COL_MAX; col++){
             if(block[row][col] == 0){
                 open_slots[open] = row*10 + col;
                 open++;
@@ -106,8 +113,8 @@ int move_blocks(char input)
     {
     case ('w')://move up
         //iterate top down row by row, ignoring row 0 as they cant be moved up
-        for(int row = 1; row < 4; row++){
-            for(int col = 0; col < 4; col++){
+        for(int row = 1; row < ROW_MAX; row++){
+            for(int col = 0; col < COL_MAX; col++){
                 //check if row above is free and if so move block to that position
                 while((block[row-1][col] == 0 && block[row][col] != 0) || (block[row-1][col] == block[row][col] && block[row][col] != 0)){
                     if(block[row-1][col] == block[row][col] && block[row][col] != 0){
@@ -131,8 +138,8 @@ int move_blocks(char input)
 
     case ('a'): //move left
         //iterate top down, left to right ingnoring col 0 as blocks there cant be moved left
-        for(int row = 0; row < 4; row++){
-            for(int col = 1; col < 4; col++){
+        for(int row = 0; row < ROW_MAX; row++){
+            for(int col = 1; col < COL_MAX; col++){
                 //check if column left is free and if so move block to that position
                 while((block[row][col-1] == 0 && block[row][col] != 0) || (block[row][col-1] == block[row][col] && block[row][col] != 0)){
                     if(block[row][col-1] == block[row][col] && block[row][col] != 0){
@@ -155,9 +162,9 @@ int move_blocks(char input)
     break;
 
     case ('s')://move down
-        //iterate bottom up, left to right ingnoring row 3 as blocks there cant be moved down
-        for(int row = 2; row >= 0; row--){
-            for(int col = 0; col < 4; col++){
+        //iterate bottom up, left to right ingnoring last row as blocks there cant be moved down
+        for(int row = ROW_MAX - 2; row >= 0; row--){
+            for(int col = 0; col < COL_MAX; col++){
                 //check if row below is free or of same value and if so move block to that position
                 while((block[row+1][col] == 0 && block[row][col] != 0) || (block[row+1][col] == block[row][col] && block[row][col] != 0)){
                     if(block[row+1][col] == block[row][col] && block[row][col] != 0){
@@ -171,7 +178,7 @@ int move_blocks(char input)
                         block[row][col] = 0;
                     }
                     //move down a row and check again
-                    if(row < 2) row++;
+                    if(row < ROW_MAX - 2) row++;
                 }
             }
         } 
@@ -180,9 +187,9 @@ int move_blocks(char input)
     break;
 
     case ('d')://move right
-        //iterate top down, right to left, ignoring col 3 as blocks there cant be moved right
-        for(int row = 0; row < 4; row++){
-            for(int col = 2; col >= 0; col--){
+        //iterate top down, right to left, ignoring last col as blocks there cant be moved right
+        for(int row = 0; row < ROW_MAX; row++){
+            for(int col = COL_MAX - 2; col >= 0; col--){
                 //check if column right is free or of same value and if so move block to that position
                 while((block[row][col+1] == 0 && block[row][col] != 0) || (block[row][col+1] == block[row][col] && block[row][col] != 0)){
                     if(block[row][col+1] == block[row][col] && block[row][col] != 0){
@@ -196,7 +203,7 @@ int move_blocks(char input)
                         block[row][col] = 0;
                     }
                     //move right a column and check again
-                    if(col < 2) col++;
+                    if(col < COL_MAX - 2) col++;
                 }
             }
         }
@@ -204,6 +211,11 @@ int move_blocks(char input)
         update_slots();
     break;
     
+    case ('0'):
+        //set available to zero to exit the game
+        available = 0;
+    break;  
+
     default:
         printf("Invalid input givin\n");
         return 0;
@@ -225,6 +237,7 @@ void game(void)
     print_game();
     //get w,a,s,d from player
     printf("Press w, a, s, or d followed by enter to move the blocks\n");
+    printf("Press 0 to quit\n");
     while(available >= 0){
         scanf("\n%c", &input);
         if(move_blocks(input)){
@@ -239,8 +252,8 @@ int score(void)
 {
     int sum = 0;
     //sum up all the blocks on the board
-    for(int row = 0; row < 4; row++){
-        for(int col = 0; col < 4; col++){
+    for(int row = 0; row < ROW_MAX; row++){
+        for(int col = 0; col < COL_MAX; col++){
             sum += block[row][col];
         }
     }
@@ -311,7 +324,7 @@ void displayHighscores(){
         printf("Error: could not open file: highscores.txt\n");
         return;
     }
-    printf("-----Highscores-----\n");
+    printf("-----High scores-----\n");
     for(int i = 0; i < NUM_HIGHSCORES; i++){
         fscanf(file, "%d", &score);
         printf("%d. %d\n", i + 1, score);
