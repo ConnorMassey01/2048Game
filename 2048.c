@@ -83,7 +83,7 @@ void set_up_game(void)
 
 void update_slots(void)
 {
-    //check each position for zeros, if they are zero add to start of array, otherwie add to end of array
+    //check each position for zeros, if they are zero add to start of array, otherwise add to end of array
     int open = 0, used = available;
     for(int row = 0; row < 4; row++){
         for(int col = 0; col < 4; col++){
@@ -109,27 +109,24 @@ int move_blocks(char input)
         for(int row = 1; row < 4; row++){
             for(int col = 0; col < 4; col++){
                 //check if row above is free and if so move block to that position
-                while(block[row-1][col] == 0 && block[row][col] != 0){
-                    block[row-1][col] = block[row][col];
-                    block[row][col] = 0;
-                    //update open_slots 
-                    update_slots();
-                    //move up a row and check again
-                    if(row > 1) row--; 
-                } 
-                //colision with another block of same value
-                while(block[row-1][col] == block[row][col] && block[row][col] != 0){
-                    block[row-1][col] *= 2;
-                    block[row][col] = 0;
-                    //add 1 to available spots
-                    available++;
-                    //update open_slots
-                    update_slots();
+                while((block[row-1][col] == 0 && block[row][col] != 0) || (block[row-1][col] == block[row][col] && block[row][col] != 0)){
+                    if(block[row-1][col] == block[row][col] && block[row][col] != 0){
+                        block[row-1][col] *= 2;
+                        block[row][col] = 0;
+                        //add 1 to available spots
+                        available++;
+                    }
+                    else{
+                        block[row-1][col] = block[row][col];
+                        block[row][col] = 0;
+                    }
                     //move up a row and check again
                     if(row > 1) row--; 
                 }               
             }
         } 
+        //update open_slots 
+        update_slots();
     break;
 
     case ('a'): //move left
@@ -137,83 +134,74 @@ int move_blocks(char input)
         for(int row = 0; row < 4; row++){
             for(int col = 1; col < 4; col++){
                 //check if column left is free and if so move block to that position
-                while(block[row][col-1] == 0 && block[row][col] != 0){
-                    block[row][col-1] = block[row][col];
-                    block[row][col] = 0;
-                    //update open_slots 
-                    update_slots();
+                while((block[row][col-1] == 0 && block[row][col] != 0) || (block[row][col-1] == block[row][col] && block[row][col] != 0)){
+                    if(block[row][col-1] == block[row][col] && block[row][col] != 0){
+                        block[row][col-1] *= 2;
+                        block[row][col] = 0;
+                        //add 1 to available spots
+                        available++;
+                    }
+                    else{
+                        block[row][col-1] = block[row][col];
+                        block[row][col] = 0;
+                    }
                     //move left a column and check again
                     if(col > 1) col--;
-                }
-                //colision with another block of same value
-                while(block[row][col-1] == block[row][col] && block[row][col] != 0){
-                    block[row][col-1] *= 2;
-                    block[row][col] = 0;
-                    //add 1 to available spots
-                    available++;
-                    //update open_slots
-                    update_slots();
-                    //move left a column and check again
-                    if(col > 1) col--;
-                }  
+                } 
             }
         }
+        //update open_slots 
+        update_slots();
     break;
 
     case ('s')://move down
-        //iterate bottom up, left to right ingoring row 3 as blocks there cant be moved down
+        //iterate bottom up, left to right ingnoring row 3 as blocks there cant be moved down
         for(int row = 2; row >= 0; row--){
             for(int col = 0; col < 4; col++){
-                //check if row below is free and if so move block to that position
-                while(block[row+1][col] == 0 && block[row][col] != 0){
-                    block[row+1][col] = block[row][col];
-                    block[row][col] = 0;
-                    //update open_slots 
-                    update_slots();
+                //check if row below is free or of same value and if so move block to that position
+                while((block[row+1][col] == 0 && block[row][col] != 0) || (block[row+1][col] == block[row][col] && block[row][col] != 0)){
+                    if(block[row+1][col] == block[row][col] && block[row][col] != 0){
+                        block[row+1][col] *= 2;
+                        block[row][col] = 0;
+                        //add 1 to available spots
+                        available++;
+                    }
+                    else{
+                        block[row+1][col] = block[row][col];
+                        block[row][col] = 0;
+                    }
                     //move down a row and check again
                     if(row < 2) row++;
                 }
-                //colision with another block of same value
-                while(block[row+1][col] == block[row][col] && block[row][col] != 0){
-                    block[row+1][col] *= 2;
-                    block[row][col] = 0;
-                    //add 1 to available spots
-                    available++;
-                    //update open_slots
-                    update_slots();
-                    //move down a row and check again
-                    if(row < 2) row++;
-                } 
             }
         } 
+        //update open_slots 
+        update_slots();
     break;
 
     case ('d')://move right
         //iterate top down, right to left, ignoring col 3 as blocks there cant be moved right
         for(int row = 0; row < 4; row++){
             for(int col = 2; col >= 0; col--){
-                //check if column right is free and if so move block to that position
-                while(block[row][col+1] == 0 && block[row][col] != 0){
-                    block[row][col+1] = block[row][col];
-                    block[row][col] = 0;
-                    //update open_slots 
-                    update_slots();
+                //check if column right is free or of same value and if so move block to that position
+                while((block[row][col+1] == 0 && block[row][col] != 0) || (block[row][col+1] == block[row][col] && block[row][col] != 0)){
+                    if(block[row][col+1] == block[row][col] && block[row][col] != 0){
+                        block[row][col+1] *= 2;
+                        block[row][col] = 0;
+                        //add 1 to available spots
+                        available++;
+                    }
+                    else{
+                        block[row][col+1] = block[row][col];
+                        block[row][col] = 0;
+                    }
                     //move right a column and check again
                     if(col < 2) col++;
                 }
-                //colision with another block of same value
-                while(block[row][col+1] == block[row][col] && block[row][col] != 0){
-                    block[row][col+1] *= 2;
-                    block[row][col] = 0;
-                    //add 1 to available spots
-                    available++;
-                    //update open_slots
-                    update_slots();
-                    //move right a column and check again
-                    if(col < 2) col++;
-                } 
             }
         }
+        //update open_slots 
+        update_slots();
     break;
     
     default:
@@ -261,7 +249,7 @@ int score(void)
 
 //only top 3 high scores are maintained
 void updateHighscores(int score){
-   FILE* file;
+    FILE* file;
     int highscores[NUM_HIGHSCORES];
     int newHighscore = 0;
     int size;
